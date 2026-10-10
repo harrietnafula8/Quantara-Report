@@ -407,3 +407,64 @@ kable(promo_levels_p1,
       caption = "Available Promotion Levels by Type (Dataset: Period 1)")
 ```
 
+## 4.2 Analysing Effectiveness (Period 1 vs Period 2)
+To evaluate effectiveness, we calculate the average sales volume for every combination of promotion type and bin level across both tracking periods. 
+
+```{r task4-effectiveness, warning=FALSE, message=FALSE, fig.width=9, fig.height=6}
+# ==============================================================================
+# ALGORITHM 2: Calculate Effectiveness & Generate Comparative Visualisation
+# ==============================================================================
+
+# Function to calculate average sales per promotion type & level
+calc_promo_effectiveness <- function(df, period_name) {
+  df %>%
+    filter(promo_type_1 != "PR14" & !is.na(promo_bin_1)) %>%
+    group_by(promo_type_1, promo_bin_1) %>%
+    summarise(
+      Total_Sales = sum(sales, na.rm = TRUE),
+      Avg_Sales = mean(sales, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(Period = period_name)
+}
+
+# Apply algorithm to both datasets
+promo_eff_p1 <- calc_promo_effectiveness(sales_1, "Period 1")
+promo_eff_p2 <- calc_promo_effectiveness(sales_2, "Period 2")
+
+# Combine for comparison
+combined_promo <- bind_rows(promo_eff_p1, promo_eff_p2)
+
+# Convert promo_bin_1 to an ordered factor for logical visual rendering
+level_order <- c("verylow", "low", "moderate", "high", "veryhigh")
+combined_promo$promo_bin_1 <- factor(combined_promo$promo_bin_1, levels = level_order)
+
+# Display tabular comparison for the most frequent promo types
+top_promos <- c("PR05", "PR10", "PR06")
+comparative_table <- combined_promo %>%
+  filter(promo_type_1 %in% top_promos) %>%
+  arrange(promo_type_1, promo_bin_1, Period) %>%
+  select(promo_type_1, promo_bin_1, Period, Avg_Sales) %>%
+  pivot_wider(names_from = Period, values_from = Avg_Sales) %>%
+  mutate(Difference = `Period 2` - `Period 1`)
+
+kable(comparative_table, 
+      digits = 2,
+      caption = "Average Sales Comparison for Top Promotions")
+
+# Generate Faceted Bar Chart
+ggplot(combined_promo, aes(x = promo_bin_1, y = Avg_Sales, fill = Period)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black", size = 0.2) +
+  facet_wrap(~ promo_type_1, scales = "free_y") +
+  scale_fill_manual(values = c("Period 1" = "#16a085", "Period 2" = "#f39c12")) +
+  labs(
+    title = "Promotion Effectiveness: Avg Sales per Event",
+    subtitle = "Comparing average item sales across promotion types and intensity levels",
+    x = "Promotion Intensity Level",
+    y = "Average Sales Volume",
+    fill = "Time Period"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
