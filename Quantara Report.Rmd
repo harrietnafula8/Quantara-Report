@@ -376,3 +376,34 @@ ggplot(hypothesis_data, aes(x = unique_products_sold, y = total_revenue)) +
 
 ## 3.5 Interpretation of Results
 The store network is predominantly made up of store types ST04 (83 locations) and ST03 (53 locations). Of the two, ST04 significantly outperforms ST03, with a total revenue of $125,919.24 from 32,790.42 unit sales, and ST03 with a total revenue of $19,363.94 from 7,908.98 units sold. Analysis shows a strong positive correlation (0.7196) of store size and total revenue. Larger stores usually have larger sales numbers. It is worth noting physical size isn’t the only factor that comes into play. Operational expansion is equally as important. Product assortment has a 0.71 positive correlation with total revenue, meaning expanding the assortment of products a store sells helps capture different consumer needs thereby increasing revenue. Overall, both physical and operational expansion (assortment of products sold) help a store increase total revenue.
+
+# Task 4: Promotional Effectiveness and Comparison
+
+## 4.1 Explanation and Assumptions
+This task evaluates how different promotion types (`promo_type_1`) and their specific intensity levels (`promo_bin_1`) impact sales volume. The analysis requires a clean isolation of active promotional events and a unified metric to judge "effectiveness."
+
+To ensure accurate and standardized analysis, the following assumptions are established:
+1. **Baseline Identification:** Preliminary data inspection reveals that `PR14` is the dominant classification where `promo_bin_1` is recorded as `NA`. We assume `PR14` represents the **baseline (non-promotional) state**. Therefore, `PR14` and any `NA` bins are filtered out to strictly evaluate active marketing campaigns.
+2. **Definition of Effectiveness:** Total sales volume can be skewed by how many days a promotion ran. Therefore, "effectiveness" is calculated as the **Average Sales per Event** (total sales divided by the number of times that specific promo/level combination occurred).
+3. **Ordinal Hierarchy:** The promotional levels (`verylow`, `low`, `moderate`, `high`, `veryhigh`) represent an ordinal scale of marketing intensity or discount depth, and must be treated as factors in sequential order for accurate trend visualization.
+
+```{r task4-setup-levels, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 1: Map Promotion Types & Levels (Using Period 1)
+# ==============================================================================
+
+# Extract and display unique promotion levels for each active promotion type in Period 1
+promo_levels_p1 <- sales_1 %>%
+  filter(promo_type_1 != "PR14" & !is.na(promo_bin_1)) %>%
+  group_by(promo_type_1) %>%
+  summarise(
+    Available_Levels = paste(sort(unique(promo_bin_1)), collapse = ", "),
+    Total_Occurrences = n()
+  ) %>%
+  arrange(desc(Total_Occurrences))
+
+kable(promo_levels_p1, 
+      col.names = c("Promotion Type", "Active Levels Used", "Event Occurrences"),
+      caption = "Available Promotion Levels by Type (Dataset: Period 1)")
+```
+
