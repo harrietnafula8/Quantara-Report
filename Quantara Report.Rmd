@@ -257,4 +257,27 @@ ggplot(combined_hierarchy, aes(x = reorder(hierarchy1_id, -total_sales_quantity)
 ## 2.5 Interpretation of Results
 H00 is the most popular primary product type for Period 1, with a dominating sales volume of 37,429.40 units. It brought in a total revenue of $95,053.80. H01, the second most popular product type, sold 5,775.00 units and brought in a total revenue of $58,558.12, with an average unit price of $10.14, higher than H00’s average unit price of $2.54. The overall hierarchy of product popularity based on sales volume, remained consistent across both datasets and throughout the period, with H00, H01, H03 and H02 in that order. In Period 2, H00 continued to dominate the sale with a volume of 40,878.85 units sold. H01 grew to 7,728.00 units sold. H02, the least popular category, contracted greatly with a volume of just 83 units sold.
 
+# Task 3: Store Types and Revenue Drivers
 
+## 3.1 Explanation and Rationale
+This task investigates the performance disparities among different retail store configurations. It first identifies the most frequently occurring store types within the network and compares their baseline sales volumes and total revenue. Secondly, it examines whether physical or operational scale—specifically `store_size`—possesses a direct correlation with revenue generation. Finally, it hypothesizes and tests another operational factor (Product Assortment / Variety) to determine if the breadth of inventory a store sells significantly impacts its financial performance.
+
+```{r task3-setup, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 1: Merge Store Metadata & Identify Most Common Store Types
+# ==============================================================================
+
+# Join Period 1 sales data with store metadata
+sales_stores <- sales_1 %>%
+  left_join(stores, by = "store_id")
+
+# Identify the distribution of store types across the network
+store_type_dist <- stores %>%
+  count(storetype_id, sort = TRUE) %>%
+  rename(Number_of_Stores = n)
+
+kable(store_type_dist, caption = "Network Distribution by Store Type")
+
+# Extract the two most common store types dynamically
+top_2_types <- store_type_dist$storetype_id[1:2]
+```
