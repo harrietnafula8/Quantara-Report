@@ -50,3 +50,34 @@ sales_2 <- read_csv("sales_pg_2.csv", show_col_types = FALSE)
 hierarchy <- read_csv("product_hierarchy.csv", show_col_types = FALSE)
 stores <- read_csv("store_cities.csv", show_col_types = FALSE)
 ```
+## 1.2 Code Testing and Data Wrangling
+Data is validated for missing values, and if there are no missing values, summarizations and aggregations are performed to get the weekly and daily revenues. A measure of variability to determine revenue volatility is also performed.
+
+```{r task1-wrangling, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 1: Test Data -> Group by Store/Date -> Calculate Revenue 
+# ==============================================================================
+
+# 1. CODE TESTING: Verify data integrity
+if(sum(is.na(sales_1$revenue)) > 0) {
+  warning("Dataset 1 contains missing revenue values.")
+} else {
+  print("Data Quality Test Passed: No missing revenue values in Dataset 1.")
+}
+
+# 2. DATA WRANGLING: Compute daily revenue per store
+daily_revenue_1 <- sales_1 %>%
+  # Grouping establishes the level of aggregation
+  group_by(store_id, date) %>%
+  # Summing the revenue column for each store, per day
+  summarise(daily_total = sum(revenue, na.rm = TRUE), .groups = "drop")
+
+# 3. DATA WRANGLING: Compute total 7-day revenue per store
+weekly_revenue_1 <- daily_revenue_1 %>%
+  group_by(store_id) %>%
+  summarise(
+    weekly_total = sum(daily_total, na.rm = TRUE),
+    # BONUS: Calculate standard deviation for day-over-day revenue volatility
+    revenue_volatility_sd = sd(daily_total, na.rm = TRUE)
+  )
+```
