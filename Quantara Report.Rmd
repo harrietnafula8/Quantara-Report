@@ -146,3 +146,83 @@ To perform this type of analysis, the following assumptions and rationales are m
 # Load necessary libraries
 library(tidyverse)
 library(knitr)
+```
+## 2.2 Code Testing and Relational Data Joining
+The sales logs are joined with product_hierarchy.csv using a left join on product_id. The code is immediately tested to determine if there are foreign key orphan records, that is,  if every product sold is linked to a product hierarchy record.
+
+```{r task2-joining, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 1: Relational Left Join & Key Integrity Testing
+# ==============================================================================
+
+# Join sales transaction logs with product hierarchy metadata
+sales_1_hierarchy <- sales_1 %>%
+  left_join(hierarchy, by = "product_id")
+
+sales_2_hierarchy <- sales_2 %>%
+  left_join(hierarchy, by = "product_id")
+
+# CODE TESTING: Verify relational join completeness (no unmatched product IDs)
+unmatched_p1 <- sum(is.na(sales_1_hierarchy$hierarchy1_id))
+unmatched_p2 <- sum(is.na(sales_2_hierarchy$hierarchy1_id))
+
+if(unmatched_p1 == 0 & unmatched_p2 == 0) {
+  print("Relational Integrity Test Passed: 100% of sales transactions mapped.")
+} else {
+  warning("Warning: Unmatched product keys detected during relational join.")
+}
+```
+
+## 2.3 Data Wrangling and Ranking Tables
+The data is grouped by hierarchy1_id to compute the number of distinct subtypes (hierarchy2_id), the number of active products (product_id), the total sales volume, total revenue, and the unit price.
+
+```{r task2-tables, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 2: Aggregate by Hierarchy Level 1 -> Compute Summary Metrics & Rank
+# ==============================================================================
+
+# Data Wrangling for Period 1
+task2_table_p1 <- sales_1_hierarchy %>%
+  group_by(hierarchy1_id) %>%
+  summarise(
+    subtypes_count = n_distinct(hierarchy2_id, na.rm = TRUE),
+    active_products_count = n_distinct(product_id, na.rm = TRUE),
+    total_sales_quantity = sum(sales, na.rm = TRUE),
+    total_revenue = sum(revenue, na.rm = TRUE),
+    # BONUS METRIC: Realized average selling price per unit
+    avg_unit_price = total_revenue / total_sales_quantity,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_sales_quantity)) %>%
+  mutate(rank = row_number()) %>%
+  relocate(rank, hierarchy1_id)
+
+# Display Period 1 Ranking Table
+kable(task2_table_p1, 
+      col.names = c("Rank", "Product Type (H1)", "Subtypes (H2)", "Active Products", "Sales Quantity", "Total Revenue ($)", "Avg Unit Price ($)"),
+      caption = "Product Type Popularity Ranking (Period 1)", 
+      digits = 2, 
+      format.args = list(big.mark = ","))
+
+# Data Wrangling for Period 2
+task2_table_p2 <- sales_2_hierarchy %>%
+  group_by(hierarchy1_id) %>%
+  summarise(
+    subtypes_count = n_distinct(hierarchy2_id, na.rm = TRUE),
+    active_products_count = n_distinct(product_id, na.rm = TRUE),
+    total_sales_quantity = sum(sales, na.rm = TRUE),
+    total_revenue = sum(revenue, na.rm = TRUE),
+    avg_unit_price = total_revenue / total_sales_quantity,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_sales_quantity)) %>%
+  mutate(rank = row_number()) %>%
+  relocate(rank, hierarchy1_id)
+
+# Display Period 2 Ranking Table
+kable(task2_table_p2, 
+      col.names = c("Rank", "Product Type (H1)", "Subtypes (H2)", "Active Products", "Sales Quantity", "Total Revenue ($)", "Avg Unit Price ($)"),
+      caption = "Product Type Popularity Ranking (Period 2)", 
+      digits = 2, 
+      format.args = list(big.mark = ","))
+```
