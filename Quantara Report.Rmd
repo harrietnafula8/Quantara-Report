@@ -281,3 +281,61 @@ kable(store_type_dist, caption = "Network Distribution by Store Type")
 # Extract the two most common store types dynamically
 top_2_types <- store_type_dist$storetype_id[1:2]
 ```
+
+
+## 3.2 Sales Volume and Revenue Comparison
+Now that the top two store types (`ST04` and `ST03`) are identified, we can compare their aggregate performance metrics.
+
+```{r task3-comparison, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 2: Compare Sales Volume and Revenue for the Top 2 Store Types
+# ==============================================================================
+
+top2_comparison <- sales_stores %>%
+  filter(storetype_id %in% top_2_types) %>%
+  group_by(storetype_id) %>%
+  summarise(
+    Total_Stores = n_distinct(store_id),
+    Total_Sales_Volume = sum(sales, na.rm = TRUE),
+    Total_Revenue = sum(revenue, na.rm = TRUE)
+  ) %>%
+  arrange(desc(Total_Revenue))
+
+kable(top2_comparison, 
+      digits = 2, 
+      format.args = list(big.mark = ","),
+      caption = "Performance Comparison: Top 2 Most Common Store Types")
+```
+
+## 3.3 Store Size vs. Revenue Relationship
+To determine if larger stores naturally generate more revenue, we aggregate total revenue per store and calculate the Pearson correlation coefficient against `store_size`.
+
+```{r task3-size-revenue, warning=FALSE, message=FALSE, fig.width=7, fig.height=4}
+# ==============================================================================
+# ALGORITHM 3: Assess Correlation Between Store Size and Revenue
+# ==============================================================================
+
+store_performance <- sales_stores %>%
+  group_by(store_id, store_size, storetype_id) %>%
+  summarise(
+    total_revenue = sum(revenue, na.rm = TRUE), 
+    .groups = "drop"
+  )
+# Calculate Pearson Correlation
+size_corr <- cor(store_performance$store_size, store_performance$total_revenue, use = "complete.obs")
+print(paste("Correlation between Store Size and Total Revenue:", round(size_corr, 4)))
+
+# Visualize the relationship
+ggplot(store_performance, aes(x = store_size, y = total_revenue)) +
+  geom_point(aes(color = storetype_id), alpha = 0.7, size = 3) +
+  geom_smooth(method = "lm", color = "darkred", se = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Store Size vs. Total Revenue",
+    subtitle = paste("Pearson Correlation:", round(size_corr, 2)),
+    x = "Store Size",
+    y = "Total Revenue ($)",
+    color = "Store Type"
+  ) +
+  theme_minimal()
+```
