@@ -260,7 +260,7 @@ H00 is the most popular primary product type for Period 1, with a dominating sal
 # Task 3: Store Types and Revenue Drivers
 
 ## 3.1 Explanation and Rationale
-This task investigates the performance disparities among different retail store configurations. It first identifies the most frequently occurring store types within the network and compares their baseline sales volumes and total revenue. Secondly, it examines whether physical or operational scale—specifically `store_size`—possesses a direct correlation with revenue generation. Finally, it hypothesizes and tests another operational factor (Product Assortment / Variety) to determine if the breadth of inventory a store sells significantly impacts its financial performance.
+This project analyzes the differences in performance of retail stores within a store network and tests the factors that contribute to revenue generation. First, it identifies the most common store types and measures their baseline sales volumes and total revenues. Next, it analyzes the correlation of store_size and revenue. Finally, it explores other factors that contribute to store performance.
 
 ```{r task3-setup, warning=FALSE, message=FALSE}
 # ==============================================================================
@@ -341,7 +341,7 @@ ggplot(store_performance, aes(x = store_size, y = total_revenue)) +
 ```
 
 ## 3.4 Hypothesis Testing: What else affects revenue?
-**Hypothesis:** Aside from physical store size, **Product Assortment (Variety)**—defined as the number of distinct, unique products a store successfully sells—is a primary driver of revenue. Stores capable of moving a wider variety of inventory will capture more consumer needs, thereby increasing total revenue regardless of baseline store size.
+**Hypothesis:** Aside from physical store size, **Product Assortment (Variety)** which is defined as the number of distinct, unique products a store successfully sells. It is a primary driver of revenue. Stores capable of moving a wider variety of inventory will capture more consumer needs, thereby increasing total revenue regardless of baseline store size.
 
 ```{r task3-hypothesis, warning=FALSE, message=FALSE, fig.width=7, fig.height=4}
 # ==============================================================================
@@ -375,4 +375,4 @@ ggplot(hypothesis_data, aes(x = unique_products_sold, y = total_revenue)) +
 ```
 
 ## 3.5 Interpretation of Results
-The network is predominantly composed of store types ST04 (83 locations) and ST03 (53 locations). ST04 significantly outperforms ST03, generating $125,919.24 in revenue from 32,790.42 units sold, compared to ST03's $19,363.94 from 7,908.98 units. Analysis reveals a strong positive correlation (0.7196) between a store's physical size and its total revenue, confirming that larger retail footprints generally drive higher sales figures. However, physical capacity is not the only determining factor. Testing the operational hypothesis confirms that product assortment is an equally strong driver of financial performance; the number of unique products a store successfully sells yields a 0.71 correlation with total revenue. This indicates that alongside physical expansion, maximizing inventory variety allows stores to capture broader consumer demand and proportionally increase their overall revenue.
+The store network is predominantly made up of store types ST04 (83 locations) and ST03 (53 locations). Of the two, ST04 significantly outperforms ST03, with a total revenue of $125,919.24 from 32,790.42 unit sales, and ST03 with a total revenue of $19,363.94 from 7,908.98 units sold. Analysis shows a strong positive correlation (0.7196) of store size and total revenue. Larger stores usually have larger sales numbers. It is worth noting physical size isn’t the only factor that comes into play. Operational expansion is equally as important. Product assortment has a 0.71 positive correlation with total revenue, meaning expanding the assortment of products a store sells helps capture different consumer needs thereby increasing revenue. Overall, both physical and operational expansion (assortment of products sold) help a store increase total revenue.
