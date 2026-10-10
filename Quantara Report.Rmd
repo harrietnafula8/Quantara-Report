@@ -376,3 +376,97 @@ ggplot(hypothesis_data, aes(x = unique_products_sold, y = total_revenue)) +
 
 ## 3.5 Interpretation of Results
 The store network is predominantly made up of store types ST04 (83 locations) and ST03 (53 locations). Of the two, ST04 significantly outperforms ST03, with a total revenue of $125,919.24 from 32,790.42 unit sales, and ST03 with a total revenue of $19,363.94 from 7,908.98 units sold. Analysis shows a strong positive correlation (0.7196) of store size and total revenue. Larger stores usually have larger sales numbers. It is worth noting physical size isn’t the only factor that comes into play. Operational expansion is equally as important. Product assortment has a 0.71 positive correlation with total revenue, meaning expanding the assortment of products a store sells helps capture different consumer needs thereby increasing revenue. Overall, both physical and operational expansion (assortment of products sold) help a store increase total revenue.
+
+# Task 4: Promotional Effectiveness and Comparison
+
+## 4.1 Explanation and Assumptions
+This task assesses the impact of different types of promotions (promo_type_1) and their intensity levels (promo_bin_1) on sales volume. For this, we need to separate out specific promotional events in the dataset and arrive at a single metrics to gauge promotion effectiveness.
+
+To ensure accurate and standardized analysis for this part, the following assumptions are made:
+1. **Baseline Identification:** Data from different promotional campaigns show that PR14 is dominated by promo_bin_1, which is classified as NA in this case. Therefore, we assume PR14 is a baseline (non-promotional) state classification. Thus, PR14 and all NA bins are removed to assess the true impact of an active marketing campaign.
+2. **Definition of Effectiveness:** Total sales volume can be skewed by how many days a promotion ran. Therefore, "effectiveness" is calculated as the **Average Sales per Event** (total sales divided by the number of times that specific promo/level combination occurred).
+3. **Ordinal Hierarchy:** The levels of promotion (verylow, low, moderate, high, veryhigh) represent an ordinal scale for marketing intensity/discount depth, and thus should be treated as factors in a sequential order for analysis.
+
+```{r task4-setup-levels, warning=FALSE, message=FALSE}
+# ==============================================================================
+# ALGORITHM 1: Map Promotion Types & Levels (Using Period 1)
+# ==============================================================================
+
+# Extract and display unique promotion levels for each active promotion type in Period 1
+promo_levels_p1 <- sales_1 %>%
+  filter(promo_type_1 != "PR14" & !is.na(promo_bin_1)) %>%
+  group_by(promo_type_1) %>%
+  summarise(
+    Available_Levels = paste(sort(unique(promo_bin_1)), collapse = ", "),
+    Total_Occurrences = n()
+  ) %>%
+  arrange(desc(Total_Occurrences))
+
+kable(promo_levels_p1, 
+      col.names = c("Promotion Type", "Active Levels Used", "Event Occurrences"),
+      caption = "Available Promotion Levels by Type (Dataset: Period 1)")
+```
+
+## 4.2 Analysing Effectiveness (Period 1 vs Period 2)
+To evaluate effectiveness, average sales for every combination of promotion type and bin level is calculated for both tracking periods. 
+
+```{r task4-effectiveness, warning=FALSE, message=FALSE, fig.width=9, fig.height=6}
+# ==============================================================================
+# ALGORITHM 2: Calculate Effectiveness & Generate Comparative Visualisation
+# ==============================================================================
+
+# Function to calculate average sales per promotion type & level
+calc_promo_effectiveness <- function(df, period_name) {
+  df %>%
+    filter(promo_type_1 != "PR14" & !is.na(promo_bin_1)) %>%
+    group_by(promo_type_1, promo_bin_1) %>%
+    summarise(
+      Total_Sales = sum(sales, na.rm = TRUE),
+      Avg_Sales = mean(sales, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(Period = period_name)
+}
+
+# Apply algorithm to both datasets
+promo_eff_p1 <- calc_promo_effectiveness(sales_1, "Period 1")
+promo_eff_p2 <- calc_promo_effectiveness(sales_2, "Period 2")
+
+# Combine for comparison
+combined_promo <- bind_rows(promo_eff_p1, promo_eff_p2)
+
+# Convert promo_bin_1 to an ordered factor for logical visual rendering
+level_order <- c("verylow", "low", "moderate", "high", "veryhigh")
+combined_promo$promo_bin_1 <- factor(combined_promo$promo_bin_1, levels = level_order)
+
+# Display tabular comparison for the most frequent promo types
+top_promos <- c("PR05", "PR10", "PR06")
+comparative_table <- combined_promo %>%
+  filter(promo_type_1 %in% top_promos) %>%
+  arrange(promo_type_1, promo_bin_1, Period) %>%
+  select(promo_type_1, promo_bin_1, Period, Avg_Sales) %>%
+  pivot_wider(names_from = Period, values_from = Avg_Sales) %>%
+  mutate(Difference = `Period 2` - `Period 1`)
+
+kable(comparative_table, 
+      digits = 2,
+      caption = "Average Sales Comparison for Top Promotions")
+
+# Generate Faceted Bar Chart
+ggplot(combined_promo, aes(x = promo_bin_1, y = Avg_Sales, fill = Period)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black", size = 0.2) +
+  facet_wrap(~ promo_type_1, scales = "free_y") +
+  scale_fill_manual(values = c("Period 1" = "#16a085", "Period 2" = "#f39c12")) +
+  labs(
+    title = "Promotion Effectiveness: Avg Sales per Event",
+    subtitle = "Comparing average item sales across promotion types and intensity levels",
+    x = "Promotion Intensity Level",
+    y = "Average Sales Volume",
+    fill = "Time Period"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 4.3 Interpretation of Results
+The most popular promotional strategy was PR05, which occurred 4,694 times in Period 1, across all five intensity tiers. The effectiveness of PR05 was directly related to its intensity, and the deeper the promotion, the higher the average sales volume. The "very high" intensity tier in Period 1 had an average sales volume of 0.72, and in Period 2, the average sales volume increased to 0.82. In contrast, PR06 was extremely volatile, and its "moderate" tier in Period 1 averaged an impressive 1.34 sales volume, but in Period 2 it crashed to 0.05, coinciding with the discontinuation of the other intensity tiers of PR06. Overall, the period of analysis was April to October, and the promotional campaigns were more effective during the second period. This can be illustrated with PR10, where the "moderate" intensity tier, which previously averaged sales volume of 0.01, increased to 0.49 during the second period. This could also indicate that better promotional targeting and a more favorable seasonal environment led to an increase in sales during the period of analysis.
