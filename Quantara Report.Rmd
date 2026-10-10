@@ -29,3 +29,24 @@ By including this statement, we the authors of this work, verify that:
 * We hereby certify that we have read and understand what the School of Computing, Engineering and Mathematics defines as minor and substantial breaches of misconduct as outlined in the learning guide for this unit.
 
 \newpage
+# Task 1: Revenue Analysis
+
+## 1.1 Explanation and Rationale
+This task examines daily and weekly revenue generation of a retail chain for a period of seven days. The objective is to determine end-of-day revenue for each store, sum the revenues for a week, create a distribution, and perform a comparative analysis of the two time based data sets to analyze if there are variations in the aggregates of sales revenue generated. 
+
+To execute this analysis robustly, the following rationales and assumptions are established:
+1. **Revenue Calculation Validity:** It is assumed that the `revenue` column of both the data sets captures the final amount realized from a transaction and consequently further calculations for revenue are not needed. 
+2. **Temporal Completeness:** All stores under consideration are captured for the seven day tracking period and any variation in aggregates for the different time periods captures authentic variations in sales.
+3. **Data Integrity Priority:** Missing values (`NA`) in the revenue column must be tested and treated before any aggregations to prevent losses due to math computations.
+
+```{r task1-setup, include=FALSE}
+# Load necessary libraries
+library(tidyverse)
+library(lubridate)
+
+# Load synthetic datasets
+sales_1 <- read_csv("sales_pg_1.csv", show_col_types = FALSE)
+sales_2 <- read_csv("sales_pg_2.csv", show_col_types = FALSE)
+hierarchy <- read_csv("product_hierarchy.csv", show_col_types = FALSE)
+stores <- read_csv("store_cities.csv", show_col_types = FALSE)
+```
