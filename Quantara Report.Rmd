@@ -339,3 +339,40 @@ ggplot(store_performance, aes(x = store_size, y = total_revenue)) +
   ) +
   theme_minimal()
 ```
+
+## 3.4 Hypothesis Testing: What else affects revenue?
+**Hypothesis:** Aside from physical store size, **Product Assortment (Variety)**—defined as the number of distinct, unique products a store successfully sells—is a primary driver of revenue. Stores capable of moving a wider variety of inventory will capture more consumer needs, thereby increasing total revenue regardless of baseline store size.
+
+```{r task3-hypothesis, warning=FALSE, message=FALSE, fig.width=7, fig.height=4}
+# ==============================================================================
+# ALGORITHM 4: Verify Hypothesis (Product Variety vs. Revenue)
+# ==============================================================================
+
+# Calculate unique products sold per store alongside revenue
+hypothesis_data <- sales_stores %>%
+  group_by(store_id) %>%
+  summarise(
+    unique_products_sold = n_distinct(product_id),
+    total_revenue = sum(revenue, na.rm = TRUE)
+  )
+
+# Calculate Pearson Correlation for the hypothesis
+variety_corr <- cor(hypothesis_data$unique_products_sold, hypothesis_data$total_revenue, use = "complete.obs")
+print(paste("Correlation between Product Variety and Total Revenue:", round(variety_corr, 4)))
+
+# Visualize the hypothesis
+ggplot(hypothesis_data, aes(x = unique_products_sold, y = total_revenue)) +
+  geom_point(color = "#2980b9", alpha = 0.6, size = 3) +
+  geom_smooth(method = "lm", color = "darkorange", se = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Hypothesis Test: Product Variety vs. Total Revenue",
+    subtitle = paste("Pearson Correlation:", round(variety_corr, 2)),
+    x = "Number of Unique Products Sold",
+    y = "Total Revenue ($)"
+  ) +
+  theme_minimal()
+```
+
+## 3.5 Interpretation of Results
+The network is predominantly composed of store types ST04 (83 locations) and ST03 (53 locations). ST04 significantly outperforms ST03, generating $125,919.24 in revenue from 32,790.42 units sold, compared to ST03's $19,363.94 from 7,908.98 units. Analysis reveals a strong positive correlation (0.7196) between a store's physical size and its total revenue, confirming that larger retail footprints generally drive higher sales figures. However, physical capacity is not the only determining factor. Testing the operational hypothesis confirms that product assortment is an equally strong driver of financial performance; the number of unique products a store successfully sells yields a 0.71 correlation with total revenue. This indicates that alongside physical expansion, maximizing inventory variety allows stores to capture broader consumer demand and proportionally increase their overall revenue.
