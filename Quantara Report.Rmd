@@ -226,3 +226,35 @@ kable(task2_table_p2,
       digits = 2, 
       format.args = list(big.mark = ","))
 ```
+
+## 2.4 Data Visualisation
+A comparative grouped bar chart is created to illustrate the sales volume distributions of product types across both periods.
+
+```{r task2-visualisation, warning=FALSE, message=FALSE, fig.width=7, fig.height=4}
+# ==============================================================================
+# ALGORITHM 3: Combine Rankings -> Generate Grouped Comparative Bar Chart
+# ==============================================================================
+
+combined_hierarchy <- bind_rows(
+  task2_table_p1 %>% mutate(period = "Period 1"),
+  task2_table_p2 %>% mutate(period = "Period 2")
+)
+
+ggplot(combined_hierarchy, aes(x = reorder(hierarchy1_id, -total_sales_quantity), y = total_sales_quantity, fill = period)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("Period 1" = "#2c4e50", "Period 2" = "#2980b9")) +
+  labs(
+    title = "Product Type Popularity Comparison (Sales Volume)",
+    subtitle = "Units sold by primary product hierarchy across datasets",
+    x = "Product Type (Hierarchy 1)",
+    y = "Total Sales Quantity (Units)",
+    fill = "Dataset Period"
+  ) +
+  theme_minimal()
+```
+
+## 2.5 Interpretation of Results
+H00 is the most popular primary product type for Period 1, with a dominating sales volume of 37,429.40 units. It brought in a total revenue of $95,053.80. H01, the second most popular product type, sold 5,775.00 units and brought in a total revenue of $58,558.12, with an average unit price of $10.14, higher than H00’s average unit price of $2.54. The overall hierarchy of product popularity based on sales volume, remained consistent across both datasets and throughout the period, with H00, H01, H03 and H02 in that order. In Period 2, H00 continued to dominate the sale with a volume of 40,878.85 units sold. H01 grew to 7,728.00 units sold. H02, the least popular category, contracted greatly with a volume of just 83 units sold.
+
+
