@@ -380,9 +380,9 @@ The store network is predominantly made up of store types ST04 (83 locations) an
 # Task 4: Promotional Effectiveness and Comparison
 
 ## 4.1 Explanation and Assumptions
-This task evaluates how different promotion types (`promo_type_1`) and their specific intensity levels (`promo_bin_1`) impact sales volume. The analysis requires a clean isolation of active promotional events and a unified metric to judge "effectiveness."
+This task assesses the impact of different types of promotions (promo_type_1) and their intensity levels (promo_bin_1) on sales volume. For this, we need to separate out specific promotional events in the dataset and arrive at a single metrics to gauge promotion effectiveness.
 
-To ensure accurate and standardized analysis, the following assumptions are established:
+To ensure accurate and standardized analysis for this part, the following assumptions are made:
 1. **Baseline Identification:** Preliminary data inspection reveals that `PR14` is the dominant classification where `promo_bin_1` is recorded as `NA`. We assume `PR14` represents the **baseline (non-promotional) state**. Therefore, `PR14` and any `NA` bins are filtered out to strictly evaluate active marketing campaigns.
 2. **Definition of Effectiveness:** Total sales volume can be skewed by how many days a promotion ran. Therefore, "effectiveness" is calculated as the **Average Sales per Event** (total sales divided by the number of times that specific promo/level combination occurred).
 3. **Ordinal Hierarchy:** The promotional levels (`verylow`, `low`, `moderate`, `high`, `veryhigh`) represent an ordinal scale of marketing intensity or discount depth, and must be treated as factors in sequential order for accurate trend visualization.
@@ -468,3 +468,5 @@ ggplot(combined_promo, aes(x = promo_bin_1, y = Avg_Sales, fill = Period)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+## 4.3 Interpretation of Results
+The analysis reveals that PR05 was the most heavily utilized promotional strategy, deployed across all five intensity tiers for a total of 4,694 events in Period 1. For PR05, effectiveness scales predictably with intensity: average sales volume consistently rises as the promotion deepens, peaking at the "veryhigh" tier which yielded 0.72 sales per event in Period 1 and improved to 0.82 in Period 2. Conversely, PR06 exhibited extreme volatility; its "moderate" tier was highly successful in Period 1 (1.34 average sales) but collapsed entirely to 0.05 in Period 2, coinciding with the discontinuation of its other intensity levels[cite: 8]. Overall, promotional campaigns were generally more effective during Period 2, highlighted by PR10's "moderate" tier surging from a negligible 0.01 sales average up to 0.49, suggesting either refined promotional targeting or a more favorable seasonal purchasing environment during the second period.
